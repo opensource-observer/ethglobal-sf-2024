@@ -1,0 +1,24 @@
+{
+  "name": "@ethglobal-sf-2024/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write ."
+  },
+  "keywords": [],
+  "authors": [
+    {
+      "name": "Javier Ríos",
+      "email": "javi@karibalabs.co"
+    }
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.7.6",
+    "prettier": "^3.3.3",
+    "typescript": "~5.6.3"
+  },
+  "dependencies": {}
+}
