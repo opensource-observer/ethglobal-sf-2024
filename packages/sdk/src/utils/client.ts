@@ -5,7 +5,7 @@ import { assertEnvVariableExists, assertOxString } from "./misc.js";
 import { Octokit } from "@octokit/rest";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { mainnet, sepolia } from "viem/chains";
+import { mainnet, polygon } from "viem/chains";
 import { SplitV2Client } from "@0xsplits/splits-sdk";
 import { EvmChains, SignProtocolClient, SpMode } from "@ethsign/sp-sdk";
 
@@ -30,7 +30,7 @@ const INFURA_API_URL = process.env.INFURA_API_URL;
 assertEnvVariableExists(INFURA_API_URL, "INFURA_API_URL");
 
 export const publicClient = createPublicClient({
-  chain: sepolia,
+  chain: polygon,
   transport: http(INFURA_API_URL),
 });
 
@@ -42,7 +42,7 @@ const account = privateKeyToAccount(HOT_WALLET_PRIVATE_KEY);
 
 export const walletClient = createWalletClient({
   account,
-  chain: sepolia,
+  chain: polygon,
   transport: http(INFURA_API_URL),
 });
 
@@ -50,7 +50,7 @@ const SPLITS_API_KEY = process.env.SPLITS_API_KEY;
 assertEnvVariableExists(SPLITS_API_KEY, "SPLITS_API_KEY");
 
 export const splitsClient = new SplitV2Client({
-  chainId: sepolia.id,
+  chainId: polygon.id,
   publicClient: publicClient,
   walletClient: walletClient,
   apiConfig: {
@@ -64,7 +64,7 @@ assertEnvVariableExists(POPULATE_USER_ID, "POPULATE_USER_ID");
 export const populateUserID = POPULATE_USER_ID;
 
 export const signClient = new SignProtocolClient(SpMode.OnChain, {
-  chain: EvmChains.sepolia,
+  chain: EvmChains.polygon,
   account,
 });
 
