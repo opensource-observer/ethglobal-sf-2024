@@ -1,6 +1,5 @@
 name: Update Split Weights
 
-# branch main only
 on:
   push:
     branches:
