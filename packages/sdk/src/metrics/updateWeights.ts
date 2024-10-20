@@ -35,6 +35,15 @@ export const updateWeights = async (): Promise<Result<null, Error>> => {
     }
     const [pool] = poolData;
 
+    const total = weights.reduce(
+      (acc, { allocatedFunding }) => acc + allocatedFunding,
+      0,
+    );
+
+    if (total !== 100) {
+      weights[0].allocatedFunding += 100 - total;
+    }
+
     if (pool.split_address === null) {
       const config: CreateSplitV2Config = {
         recipients: weights.map(({ allocatedFunding, contributor }) => ({
@@ -49,6 +58,16 @@ export const updateWeights = async (): Promise<Result<null, Error>> => {
       };
 
       const { splitAddress, event } = await splitsClient.createSplit(config);
+
+      const { error } = await supabase
+        .from("funding_pools")
+        .update({ split_address: splitAddress })
+        .eq("id", id);
+
+      if (error) {
+        return new FailResult(new Error(error.message));
+      }
+
       core.info(`Created split: ${splitAddress}, Event: ${event}`);
       core.startGroup(`Split Details for ${id}`);
       core.info(`Address: ${splitAddress}`);

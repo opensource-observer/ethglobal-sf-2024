@@ -43,8 +43,8 @@ export const metricsForProject = async (
     });
     const prCount = prs.length;
 
-    const { data: codeFrequency } = await octokit.rest.repos
-      .getCodeFrequencyStats({
+    const { data: codeFrequency } =
+      await octokit.rest.repos.getCodeFrequencyStats({
         owner: artifactNamespace,
         repo: artifactName,
       });

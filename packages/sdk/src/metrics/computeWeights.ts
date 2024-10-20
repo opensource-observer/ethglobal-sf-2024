@@ -65,10 +65,11 @@ export const computeWeights = async (): Promise<
       const normalizedLinesDeleted = metrics.linesDeleted / totalLinesDeleted;
       const normalizedCommits = metrics.commitCount / totalCommits;
 
-      const normalizedLines = (normalizedLinesAdded + normalizedLinesDeleted) /
-        2;
+      const normalizedLines =
+        (normalizedLinesAdded + normalizedLinesDeleted) / 2;
 
-      const share = prWeight * normalizedPRs +
+      const share =
+        prWeight * normalizedPRs +
         issueWeight * normalizedIssues +
         linesWeight * normalizedLines +
         commitWeight * normalizedCommits;
@@ -87,8 +88,10 @@ export const computeWeights = async (): Promise<
     const fundingDistribution = contributorsShares.map((contributorShare) => {
       return {
         contributor: contributorShare.contributor,
-        allocatedFunding: +((contributorShare.sharePercentage / 100) *
-          fundingPool).toFixed(4),
+        allocatedFunding: +(
+          (contributorShare.sharePercentage / 100) *
+          fundingPool
+        ).toFixed(4),
       };
     });
 
