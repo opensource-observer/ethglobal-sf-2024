@@ -58,42 +58,74 @@ export const computeWeights = async (): Promise<
       totalCommits += metrics.commitCount;
     });
 
-    const contributorsShares = metrics.map(({ metrics, info }) => {
-      const normalizedPRs = metrics.prCount / totalPRs;
-      const normalizedIssues = metrics.issueCount / totalIssues;
-      const normalizedLinesAdded = metrics.linesAdded / totalLinesAdded;
-      const normalizedLinesDeleted = metrics.linesDeleted / totalLinesDeleted;
-      const normalizedCommits = metrics.commitCount / totalCommits;
+    const contributorsShares = metrics.map(async ({ metrics, info }) => {
+      const normalizedPRs = totalPRs > 0 ? metrics.prCount / totalPRs : 0;
+      const normalizedIssues = totalIssues > 0
+        ? metrics.issueCount / totalIssues
+        : 0;
+      const normalizedLinesAdded = totalLinesAdded > 0
+        ? metrics.linesAdded / totalLinesAdded
+        : 0;
+      const normalizedLinesDeleted = totalLinesDeleted > 0
+        ? metrics.linesDeleted / totalLinesDeleted
+        : 0;
+      const normalizedCommits = totalCommits > 0
+        ? metrics.commitCount / totalCommits
+        : 0;
 
-      const normalizedLines =
-        (normalizedLinesAdded + normalizedLinesDeleted) / 2;
+      const normalizedLines = (normalizedLinesAdded + normalizedLinesDeleted) /
+        2;
 
-      const share =
-        prWeight * normalizedPRs +
+      const share = prWeight * normalizedPRs +
         issueWeight * normalizedIssues +
         linesWeight * normalizedLines +
         commitWeight * normalizedCommits;
 
-      return {
+      const recipients: FundingWeight[] = [];
+
+      if (info.referrer !== null) {
+        const { data, error } = await supabase
+          .from("pool_registrations")
+          .select("*")
+          .eq("id", info.referrer);
+
+        if (!error && data.length > 0) {
+          const [referrer] = data;
+
+          recipients.push({
+            contributor: {
+              id: referrer.user_id,
+              wallet: referrer.wallet_address,
+              artifact_namespace: referrer.artifact_namespace,
+              artifact_name: referrer.artifact_name,
+            },
+            allocatedFunding: share * 0.01,
+          });
+        }
+      }
+
+      recipients.push({
         contributor: {
           id: info.user_id,
           wallet: info.wallet_address,
           artifact_namespace: info.artifact_namespace,
           artifact_name: info.artifact_name,
         },
-        sharePercentage: share * 100,
-      };
+        allocatedFunding: recipients.length === 1 ? share * 0.99 : share,
+      });
+
+      return recipients;
     });
 
-    const fundingDistribution = contributorsShares.map((contributorShare) => {
-      return {
+    const fundingDistribution = (await Promise.all(contributorsShares))
+      .flat()
+      .map((contributorShare) => ({
         contributor: contributorShare.contributor,
         allocatedFunding: +(
-          (contributorShare.sharePercentage / 100) *
+          (contributorShare.allocatedFunding / 100) *
           fundingPool
         ).toFixed(4),
-      };
-    });
+      }));
 
     fundingWeights[pool.id] = fundingDistribution;
 
