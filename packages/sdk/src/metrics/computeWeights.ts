@@ -134,7 +134,25 @@ export const computeWeights = async (): Promise<
 
     const recipients = (await Promise.all(contributorsShares)).flat();
 
-    const fundingDistribution = recipients
+    const mergedRecipients = recipients.reduce<{
+      contributor: FundingWeight["contributor"];
+      sharePercentage: number;
+    }[]>(
+      (acc, current) => {
+        const x = acc.find(
+          (item) => item.contributor.id === current.contributor.id,
+        );
+        if (!x) {
+          return [...acc, current];
+        } else {
+          x.sharePercentage += current.sharePercentage;
+          return acc;
+        }
+      },
+      [],
+    );
+
+    const fundingDistribution = mergedRecipients
       .map(
         (contributorShare) => {
           return {
@@ -153,7 +171,7 @@ export const computeWeights = async (): Promise<
     core.startGroup("Weights");
     fundingDistribution.forEach((fundingWeight) => {
       core.info(
-        `${fundingWeight.contributor.artifact_namespace}/${fundingWeight.contributor.artifact_name}: ${fundingWeight.allocatedFunding}`,
+        `${fundingWeight.contributor.artifact_namespace}/${fundingWeight.contributor.artifact_name}: ${fundingWeight.allocatedFunding}%`,
       );
     });
     core.endGroup();
