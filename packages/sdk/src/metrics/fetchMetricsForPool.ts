@@ -3,6 +3,7 @@ import { Tables } from "types.js";
 import { FailResult, OkResult, Result } from "typescript-monads";
 import { metricsForProject, type PoolEntryMetrics } from "../utils/metrics.js";
 import core from "@actions/core";
+import { isAddress } from "viem";
 
 type ExtendedMetrics = {
   info: Tables<"pool_registrations">;
@@ -33,7 +34,11 @@ export const fetchMetricsForPool = async (
     return new FailResult(poolError);
   }
 
-  for (const project of poolData) {
+  const hasValidAddress = poolData.filter(
+    (project) => isAddress(project.wallet_address),
+  );
+
+  for (const project of hasValidAddress) {
     const projectMetric = await metricsForProject(
       project.artifact_namespace,
       project.artifact_name,
