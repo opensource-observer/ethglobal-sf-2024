@@ -9,6 +9,7 @@ import { SplitV2Type } from "@0xsplits/splits-sdk/types";
 import { sepolia } from "viem/chains";
 import { assertOxString } from "../utils/misc.js";
 import core from "@actions/core";
+import { createAttestation } from "../utils/createAttestation.js";
 
 export const updateWeights = async (): Promise<Result<null, Error>> => {
   const newWeights = await computeWeights();
@@ -68,6 +69,8 @@ export const updateWeights = async (): Promise<Result<null, Error>> => {
         return new FailResult(new Error(error.message));
       }
 
+      await createAttestation({ weights: config.recipients, kind: "create" });
+
       core.info(`Created split: ${splitAddress}, Event: ${event}`);
       core.startGroup(`Split Details for ${id}`);
       core.info(`Address: ${splitAddress}`);
@@ -91,6 +94,9 @@ export const updateWeights = async (): Promise<Result<null, Error>> => {
       };
 
       const { event } = await splitsClient.updateSplit(config);
+
+      await createAttestation({ weights: config.recipients, kind: "update" });
+
       core.info(`Updated split: ${pool.split_address}, Event: ${event}`);
       core.startGroup(`Split Details for ${id}`);
       core.info(`Address: ${pool.split_address}`);
