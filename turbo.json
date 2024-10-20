@@ -23,6 +23,22 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
       "cache": false
+    },
+    "frontend#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["out/**", ".next/**"],
+      "env": [
+        "STATIC_EXPORT",
+        "NEXT_PUBLIC_SEGMENT_KEY",
+        "PLASMIC_PROJECT_ID",
+        "PLASMIC_PROJECT_API_TOKEN",
+        "NEXT_PUBLIC_DOMAIN",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY",
+        "SUPABASE_JWT_SECRET"
+      ],
+      "cache": false
     }
   }
 }

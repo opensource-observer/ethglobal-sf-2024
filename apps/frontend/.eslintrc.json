@@ -16,7 +16,7 @@
       {
         "object": "console",
         "property": "error",
-        "message": "Please use the logger instead.",
+        "message": "Please use the logger instead."
       }
     ],
     "no-restricted-globals": [
