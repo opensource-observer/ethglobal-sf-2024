@@ -7,8 +7,7 @@
     "build": "tsc",
     "format": "prettier --write .",
     "populate:db": "node dist/index.js populate:db",
-    "update:weights": "node dist/index.js update:weights",
-    "dispatch:email": "node dist/index.js dispatch:email"
+    "update:weights": "node dist/index.js update:weights"
   },
   "keywords": [],
   "authors": [
@@ -27,6 +26,7 @@
   "dependencies": {
     "@0xsplits/splits-sdk": "^4.1.0",
     "@actions/core": "^1.11.1",
+    "@ethsign/sp-sdk": "^0.7.5",
     "@faker-js/faker": "^9.0.3",
     "@octokit/rest": "^21.0.2",
     "@supabase/supabase-js": "^2.45.6",
