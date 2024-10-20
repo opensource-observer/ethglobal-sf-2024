@@ -8,11 +8,11 @@ on:
 jobs:
   update-weights:
     runs-on: ubuntu-latest
+    environment: eth-global-sf
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      INFURA_KEY: ${{ secrets.INFURA_KEY }}
       INFURA_API_URL: ${{ secrets.INFURA_API_URL }}
       HOT_WALLET_ADDRESS: ${{ secrets.HOT_WALLET_ADDRESS }}
       HOT_WALLET_PRIVATE_KEY: ${{ secrets.HOT_WALLET_PRIVATE_KEY }}
