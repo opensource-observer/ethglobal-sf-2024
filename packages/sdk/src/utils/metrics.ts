@@ -1,5 +1,5 @@
 import { octokit } from "./client.js";
-import { FailResult, OkResult, Result } from "typescript-monads";
+import { OkResult, Result } from "typescript-monads";
 import core from "@actions/core";
 
 export type PoolEntryMetrics = {
@@ -71,10 +71,13 @@ export const metricsForProject = async (
       linesAdded,
       linesDeleted: Math.abs(linesDeleted),
     });
-  } catch (err) {
-    if (err instanceof Error) {
-      return new FailResult(err);
-    }
-    return new FailResult(new Error("Unknown error"));
+  } catch {
+    return new OkResult({
+      commitCount: 0,
+      issueCount: 0,
+      prCount: 0,
+      linesAdded: 0,
+      linesDeleted: 0,
+    });
   }
 };
