@@ -10,6 +10,7 @@ type FundingWeight = {
     artifact_namespace: string;
     artifact_name: string;
   };
+  kind: string;
   allocatedFunding: number;
 };
 
@@ -81,7 +82,8 @@ export const computeWeights = async (): Promise<
             artifact_namespace: info.artifact_namespace,
             artifact_name: info.artifact_name,
           },
-          sharePercentage: share * 100,
+          kind: "base",
+          allocatedFunding: share * 100,
         }];
       }
 
@@ -115,7 +117,8 @@ export const computeWeights = async (): Promise<
             artifact_namespace: referrer[0].artifact_namespace,
             artifact_name: referrer[0].artifact_name,
           },
-          sharePercentage: share,
+          kind: "referrer",
+          allocatedFunding: share,
         });
       }
 
@@ -126,7 +129,8 @@ export const computeWeights = async (): Promise<
           artifact_namespace: info.artifact_namespace,
           artifact_name: info.artifact_name,
         },
-        sharePercentage: error ? share * 100 : share * 99,
+        kind: error ? "base" : "referrer",
+        allocatedFunding: error ? share * 100 : share * 99,
       });
 
       return recipients;
@@ -134,20 +138,21 @@ export const computeWeights = async (): Promise<
 
     const recipients = (await Promise.all(contributorsShares)).flat();
 
-    const mergedRecipients = recipients.reduce<{
-      contributor: FundingWeight["contributor"];
-      sharePercentage: number;
-    }[]>(
-      (acc, current) => {
-        const x = acc.find(
-          (item) => item.contributor.id === current.contributor.id,
+    const mergedRecipients = recipients.reduce<FundingWeight[]>(
+      (acc, recipient) => {
+        const existingRecipient = acc.find(
+          (r) =>
+            `${r.contributor.artifact_namespace}/${r.contributor.artifact_name}` ===
+              `${recipient.contributor.artifact_namespace}/${recipient.contributor.artifact_name}`,
         );
-        if (!x) {
-          return [...acc, current];
+
+        if (existingRecipient) {
+          existingRecipient.allocatedFunding += recipient.allocatedFunding;
         } else {
-          x.sharePercentage += current.sharePercentage;
-          return acc;
+          acc.push(recipient);
         }
+
+        return acc;
       },
       [],
     );
@@ -158,9 +163,10 @@ export const computeWeights = async (): Promise<
           return {
             contributor: contributorShare.contributor,
             allocatedFunding: +(
-              (contributorShare.sharePercentage / 100) *
+              (contributorShare.allocatedFunding / 100) *
               fundingPool
             ).toFixed(4),
+            kind: contributorShare.kind,
           };
         },
       );
