@@ -11,10 +11,7 @@
     "moduleResolution": "NodeNext",
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": ".",
-    "paths": {
-      "&/*": ["src/*"]
-    }
+    "baseUrl": "src"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
