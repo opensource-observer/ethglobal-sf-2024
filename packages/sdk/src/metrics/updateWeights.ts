@@ -6,7 +6,7 @@ import type {
   UpdateSplitV2Config,
 } from "@0xsplits/splits-sdk";
 import { SplitV2Type } from "@0xsplits/splits-sdk/types";
-import { sepolia } from "viem/chains";
+import { polygon } from "viem/chains";
 import { assertOxString } from "../utils/misc.js";
 import core from "@actions/core";
 import { createAttestation } from "../utils/createAttestation.js";
@@ -55,7 +55,7 @@ export const updateWeights = async (): Promise<Result<null, Error>> => {
         splitType: SplitV2Type.Push,
         ownerAddress: address,
         creatorAddress: address,
-        chainId: sepolia.id,
+        chainId: polygon.id,
       };
 
       const { splitAddress, event } = await splitsClient.createSplit(config);

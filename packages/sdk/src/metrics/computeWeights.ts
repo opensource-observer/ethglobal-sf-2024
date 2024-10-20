@@ -3,7 +3,7 @@ import { FailResult, OkResult, Result } from "typescript-monads";
 import { fetchMetricsForPool } from "./fetchMetricsForPool.js";
 import core from "@actions/core";
 
-type FundingWeight = {
+export type FundingWeight = {
   contributor: {
     id: string;
     wallet: string;
