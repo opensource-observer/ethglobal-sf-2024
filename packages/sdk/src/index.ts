@@ -5,7 +5,6 @@ import { populateDb } from "./utils/misc.js";
 const args = await yargs(process.argv.slice(2))
   .command("populate:db", "Populate the database with initial data")
   .command("update:weights", "Update weights in the Split")
-  .command("dispatch:email", "Dispatch email with the new weights")
   .demandCommand(1)
   .help().argv;
 
@@ -26,7 +25,6 @@ const commandMap: {
       throw result.unwrapFail();
     }
   },
-  "dispatch:email": () => void 0,
 };
 
 await commandMap[command]();
