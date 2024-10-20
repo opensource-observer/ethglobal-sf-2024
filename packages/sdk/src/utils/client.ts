@@ -7,6 +7,7 @@ import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { SplitV2Client } from "@0xsplits/splits-sdk";
+import { EvmChains, SignProtocolClient, SpMode } from "@ethsign/sp-sdk";
 
 config();
 
@@ -61,3 +62,8 @@ const POPULATE_USER_ID = process.env.POPULATE_USER_ID;
 assertEnvVariableExists(POPULATE_USER_ID, "POPULATE_USER_ID");
 
 export const populateUserID = POPULATE_USER_ID;
+
+export const signClient = new SignProtocolClient(SpMode.OnChain, {
+  chain: EvmChains.sepolia,
+  account,
+});

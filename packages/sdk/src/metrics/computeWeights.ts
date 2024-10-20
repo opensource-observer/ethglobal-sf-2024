@@ -66,25 +66,28 @@ export const computeWeights = async (): Promise<
       const normalizedLinesDeleted = metrics.linesDeleted / totalLinesDeleted;
       const normalizedCommits = metrics.commitCount / totalCommits;
 
-      const normalizedLines = (normalizedLinesAdded + normalizedLinesDeleted) /
-        2;
+      const normalizedLines =
+        (normalizedLinesAdded + normalizedLinesDeleted) / 2;
 
-      const share = prWeight * normalizedPRs +
+      const share =
+        prWeight * normalizedPRs +
         issueWeight * normalizedIssues +
         linesWeight * normalizedLines +
         commitWeight * normalizedCommits;
 
       if (info.referrer === null) {
-        return [{
-          contributor: {
-            id: info.user_id,
-            wallet: info.wallet_address,
-            artifact_namespace: info.artifact_namespace,
-            artifact_name: info.artifact_name,
+        return [
+          {
+            contributor: {
+              id: info.user_id,
+              wallet: info.wallet_address,
+              artifact_namespace: info.artifact_namespace,
+              artifact_name: info.artifact_name,
+            },
+            kind: "base",
+            allocatedFunding: share * 100,
           },
-          kind: "base",
-          allocatedFunding: share * 100,
-        }];
+        ];
       }
 
       const queryParams = new URLSearchParams(info.referrer);
@@ -93,13 +96,11 @@ export const computeWeights = async (): Promise<
         ? queryParams.get("referrer")!
         : info.referrer;
 
-      const { data: referrer, error } = await supabase.from(
-        "pool_registrations",
-      )
-        .select("*").eq(
-          "pool_id",
-          pool.id,
-        ).eq("user_id", referrerId);
+      const { data: referrer, error } = await supabase
+        .from("pool_registrations")
+        .select("*")
+        .eq("pool_id", pool.id)
+        .eq("user_id", referrerId);
 
       const recipients = [];
 
@@ -143,7 +144,7 @@ export const computeWeights = async (): Promise<
         const existingRecipient = acc.find(
           (r) =>
             `${r.contributor.artifact_namespace}/${r.contributor.artifact_name}` ===
-              `${recipient.contributor.artifact_namespace}/${recipient.contributor.artifact_name}`,
+            `${recipient.contributor.artifact_namespace}/${recipient.contributor.artifact_name}`,
         );
 
         if (existingRecipient) {
@@ -157,19 +158,16 @@ export const computeWeights = async (): Promise<
       [],
     );
 
-    const fundingDistribution = mergedRecipients
-      .map(
-        (contributorShare) => {
-          return {
-            contributor: contributorShare.contributor,
-            allocatedFunding: +(
-              (contributorShare.allocatedFunding / 100) *
-              fundingPool
-            ).toFixed(4),
-            kind: contributorShare.kind,
-          };
-        },
-      );
+    const fundingDistribution = mergedRecipients.map((contributorShare) => {
+      return {
+        contributor: contributorShare.contributor,
+        allocatedFunding: +(
+          (contributorShare.allocatedFunding / 100) *
+          fundingPool
+        ).toFixed(4),
+        kind: contributorShare.kind,
+      };
+    });
 
     fundingWeights[pool.id] = fundingDistribution;
 
