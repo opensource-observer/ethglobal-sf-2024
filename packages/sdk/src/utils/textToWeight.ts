@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { supabase } from "./utils/client.js";
-import type { FundingWeight } from "./metrics/computeWeights.js";
+import { supabase } from "./client.js";
+import type { FundingWeight } from "../metrics/computeWeights.js";
 
 // Utility function to create a fundingWeight from
 // a dump of the format:
