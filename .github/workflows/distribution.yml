@@ -1,14 +1,9 @@
 name: Update Split Weights
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   schedule:
     - cron: "0 19 * * 0"
+  workflow_dispatch:
 
 jobs:
   update-weights:
@@ -28,7 +23,6 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
           run_install: |
             - recursive: true
               args: [--frozen-lockfile, --strict-peer-dependencies]
