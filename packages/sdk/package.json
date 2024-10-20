@@ -1,0 +1,38 @@
+{
+  "name": "@ethglobal-sf-2024/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write .",
+    "populate:db": "node dist/index.js populate:db",
+    "update:weights": "node dist/index.js update:weights",
+    "dispatch:email": "node dist/index.js dispatch:email"
+  },
+  "keywords": [],
+  "authors": [
+    {
+      "name": "Javier Ríos",
+      "email": "javi@karibalabs.co"
+    }
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.7.7",
+    "@types/yargs": "^17.0.33",
+    "prettier": "^3.3.3",
+    "typescript": "~5.6.3"
+  },
+  "dependencies": {
+    "@0xsplits/splits-sdk": "^4.1.0",
+    "@actions/core": "^1.11.1",
+    "@faker-js/faker": "^9.0.3",
+    "@octokit/rest": "^21.0.2",
+    "@supabase/supabase-js": "^2.45.6",
+    "dotenv": "^16.4.5",
+    "typescript-monads": "^9.0.0",
+    "viem": "^2.21.29",
+    "yargs": "^17.7.2"
+  }
+}

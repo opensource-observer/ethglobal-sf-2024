@@ -1,0 +1,43 @@
+name: Update Split Weights
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 19 * * 0"
+
+jobs:
+  update-weights:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      INFURA_KEY: ${{ secrets.INFURA_KEY }}
+      INFURA_API_URL: ${{ secrets.INFURA_API_URL }}
+      HOT_WALLET_ADDRESS: ${{ secrets.HOT_WALLET_ADDRESS }}
+      HOT_WALLET_PRIVATE_KEY: ${{ secrets.HOT_WALLET_PRIVATE_KEY }}
+      SPLITS_API_KEY: ${{ secrets.SPLITS_API_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: |
+            - recursive: true
+              args: [--frozen-lockfile, --strict-peer-dependencies]
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
+          node-version: "20.x"
+      - name: Build sdk
+        run: pnpm build:sdk
+      - name: Update Weights
+        run: cd packages/sdk && pnpm update:weights

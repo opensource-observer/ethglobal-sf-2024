@@ -1,0 +1,28 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local", "**/.env"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "deploy": {
+      "dependsOn": ["build"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "persistent": true
+    },
+    "lint": {},
+    "sentry:sourcemaps": {},
+    "start": {
+      "cache": false
+    },
+    "test": {},
+    "@ethglobal-sf-2024/sdk#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "cache": false
+    }
+  }
+}
