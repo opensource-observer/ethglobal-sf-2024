@@ -34,8 +34,8 @@ export const fetchMetricsForPool = async (
     return new FailResult(poolError);
   }
 
-  const hasValidAddress = poolData.filter(
-    (project) => isAddress(project.wallet_address),
+  const hasValidAddress = poolData.filter((project) =>
+    isAddress(project.wallet_address),
   );
 
   for (const project of hasValidAddress) {
