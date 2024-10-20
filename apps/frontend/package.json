@@ -9,13 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.4",
+    "@plasmicapp/loader-nextjs": "^1.0.406",
+    "@segment/analytics-next": "^1.75.0",
     "@supabase/supabase-js": "^2.45.5",
+    "lodash": "^4.17.21",
     "next": "14.2.15",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-use": "^17.5.1",
+    "swr": "^2.2.5",
+    "ts-adt": "^2.1.2"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/lodash": "^4.17.12",
+    "@types/node": "^20.16.13",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
