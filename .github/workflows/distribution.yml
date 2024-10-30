@@ -1,8 +1,8 @@
 name: Update Split Weights
 
 on:
-  schedule:
-    - cron: "0 19 * * 0"
+  # schedule:
+  #   - cron: "0 19 * * 0"
   workflow_dispatch:
 
 jobs:
@@ -34,5 +34,5 @@ jobs:
           node-version: "20.x"
       - name: Build sdk
         run: pnpm build:sdk
-      - name: Update Weights
-        run: cd packages/sdk && pnpm update:weights
+      - name: Update Weights (Eth Global SF 2024)
+        run: cd packages/sdk && pnpm update:weights --range 2024-10-18:2024-10-20

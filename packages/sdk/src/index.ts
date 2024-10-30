@@ -1,10 +1,16 @@
 import yargs from "yargs";
 import { updateWeights } from "./metrics/index.js";
-import { populateDb } from "./utils/misc.js";
+import { coerceRange, daysAgo, populateDb } from "./utils/misc.js";
 
 const args = await yargs(process.argv.slice(2))
   .command("populate:db", "Populate the database with initial data")
-  .command("update:weights", "Update weights in the Split")
+  .command("update:weights", "Update weights in the Split", {
+    range: {
+      type: "string",
+      description: "Range of the weights to update (YYYY-MM-DD:YYYY-MM-DD)",
+      coerce: coerceRange,
+    },
+  })
   .demandCommand(1)
   .help().argv;
 
@@ -20,7 +26,11 @@ const commandMap: {
     }
   },
   "update:weights": async () => {
-    const result = await updateWeights();
+    const range = args.range as { from: Date; to: Date } | undefined;
+    const result = await updateWeights(
+      range?.from ?? daysAgo(7),
+      range?.to ?? new Date(),
+    );
     if (result.isFail()) {
       throw result.unwrapFail();
     }

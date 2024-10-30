@@ -12,6 +12,8 @@ type ExtendedMetrics = {
 
 export const fetchMetricsForPool = async (
   poolUuid: string,
+  from: Date,
+  to: Date,
 ): Promise<Result<ExtendedMetrics[], Error>> => {
   core.info(`Fetching metrics for pool ${poolUuid}`);
   const { data, error } = await supabase
@@ -39,9 +41,14 @@ export const fetchMetricsForPool = async (
   );
 
   for (const project of hasValidAddress) {
+    core.info(
+      `Fetching metrics for project ${project.artifact_namespace}/${project.artifact_name}`,
+    );
     const projectMetric = await metricsForProject(
       project.artifact_namespace,
       project.artifact_name,
+      from,
+      to,
     );
 
     const flatMappedMetric = projectMetric.flatMap(

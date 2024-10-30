@@ -90,3 +90,36 @@ export const populateDb = async (): Promise<Result<null, Error>> => {
 
   return new OkResult(null);
 };
+
+export const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+export const coerceRange = (
+  range: string,
+): {
+  to: Date;
+  from: Date;
+} => {
+  const regex = /(\d{4}-\d{2}-\d{2}):(\d{4}-\d{2}-\d{2})/;
+  if (!regex.test(range)) {
+    throw new Error(
+      `Invalid range: ${range} does not match YYYY-MM-DD:YYYY-MM-DD`,
+    );
+  }
+
+  const [from, to] = range.split(":").map((date) => new Date(date));
+
+  if (from > to) {
+    throw new Error(`Invalid range: ${from} is after ${to}`);
+  }
+
+  if (to.getTime() - from.getTime() > 60 * 24 * 60 * 60 * 1000) {
+    throw new Error(
+      "Range cannot be more than 60 days (GitHub API limitation)",
+    );
+  }
+
+  return { from, to };
+};
+
+export const capLines = (lines: number) => Math.min(lines, 10000);
