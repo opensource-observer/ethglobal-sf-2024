@@ -11,8 +11,11 @@ import { assertOxString } from "../utils/misc.js";
 import core from "@actions/core";
 import { createAttestation } from "../utils/createAttestation.js";
 
-export const updateWeights = async (): Promise<Result<null, Error>> => {
-  const newWeights = await computeWeights();
+export const updateWeights = async (
+  from: Date,
+  to: Date,
+): Promise<Result<null, Error>> => {
+  const newWeights = await computeWeights(from, to);
   if (newWeights.isFail()) {
     return new FailResult(newWeights.unwrapFail());
   }
