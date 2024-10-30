@@ -13,11 +13,23 @@ export type PoolEntryMetrics = {
 export const metricsForProject = async (
   artifactNamespace: string,
   artifactName: string,
+  from: Date,
+  to: Date,
+  retries = 5,
 ): Promise<Result<PoolEntryMetrics, Error>> => {
-  const from = new Date();
-  from.setDate(from.getDate() - 7);
+  if (retries < 0) {
+    core.warning(
+      `Failed to fetch metrics for ${artifactNamespace}/${artifactName}. Retries exhausted...`,
+    );
 
-  const to = new Date();
+    return new OkResult({
+      commitCount: 0,
+      issueCount: 0,
+      prCount: 0,
+      linesAdded: 0,
+      linesDeleted: 0,
+    });
+  }
 
   try {
     const { data: commits } = await octokit.rest.repos.listCommits({
@@ -54,15 +66,27 @@ export const metricsForProject = async (
     // to allow GitHub to catch up
     if (!Array.isArray(codeFrequency)) {
       core.warning(
-        `Code frequency not available for ${artifactNamespace}/${artifactName}...`,
+        `Code frequency not available for ${artifactNamespace}/${artifactName}. Retrying... (${retries} left)`,
       );
       await new Promise((resolve) => setTimeout(resolve, 10000));
-      return metricsForProject(artifactNamespace, artifactName);
+
+      return metricsForProject(
+        artifactNamespace,
+        artifactName,
+        from,
+        to,
+        retries - 1,
+      );
     }
 
-    const last7Days = codeFrequency.slice(-7);
-    const linesAdded = last7Days.reduce((acc, week) => acc + week[1], 0);
-    const linesDeleted = last7Days.reduce((acc, week) => acc + week[2], 0);
+    // GitHub only provides the last 60 days of code frequency data
+    const daysBetween = Math.min(
+      Math.floor(((to.getTime() - from.getTime()) / 24) * 60 * 60 * 1000),
+      60,
+    );
+    const lastDays = codeFrequency.slice(-daysBetween);
+    const linesAdded = lastDays.reduce((acc, week) => acc + week[1], 0);
+    const linesDeleted = lastDays.reduce((acc, week) => acc + week[2], 0);
 
     return new OkResult({
       commitCount,
@@ -72,12 +96,16 @@ export const metricsForProject = async (
       linesDeleted: Math.abs(linesDeleted),
     });
   } catch {
-    return new OkResult({
-      commitCount: 0,
-      issueCount: 0,
-      prCount: 0,
-      linesAdded: 0,
-      linesDeleted: 0,
-    });
+    core.warning(
+      `Failed to fetch metrics for ${artifactNamespace}/${artifactName}. Retrying... (${retries} left)`,
+    );
+
+    return metricsForProject(
+      artifactNamespace,
+      artifactName,
+      from,
+      to,
+      retries - 1,
+    );
   }
 };
