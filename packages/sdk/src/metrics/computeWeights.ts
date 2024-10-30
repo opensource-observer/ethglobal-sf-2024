@@ -2,6 +2,7 @@ import { supabase } from "../utils/client.js";
 import { FailResult, OkResult, Result } from "typescript-monads";
 import { fetchMetricsForPool } from "./fetchMetricsForPool.js";
 import core from "@actions/core";
+import { capLines } from "../utils/misc.js";
 
 export type FundingWeight = {
   contributor: {
@@ -14,9 +15,10 @@ export type FundingWeight = {
   allocatedFunding: number;
 };
 
-export const computeWeights = async (): Promise<
-  Result<Record<string, FundingWeight[]>, Error>
-> => {
+export const computeWeights = async (
+  from: Date,
+  to: Date,
+): Promise<Result<Record<string, FundingWeight[]>, Error>> => {
   core.info("Computing weights for funding pools");
   const { data: poolData, error } = await supabase
     .from("funding_pools")
@@ -31,17 +33,18 @@ export const computeWeights = async (): Promise<
   } = {};
 
   for (const pool of poolData) {
-    const metricsResult = await fetchMetricsForPool(pool.id);
+    const metricsResult = await fetchMetricsForPool(pool.id, from, to);
 
     if (metricsResult.isFail()) {
       return new FailResult(metricsResult.unwrapFail());
     }
+
     const metrics = metricsResult.unwrap();
 
-    const prWeight = 0.3;
-    const issueWeight = 0.2;
-    const linesWeight = 0.4;
-    const commitWeight = 0.1;
+    const prWeight = 0.4;
+    const issueWeight = 0.1;
+    const linesWeight = 0.2;
+    const commitWeight = 0.3;
 
     const fundingPool = 100;
 
@@ -54,16 +57,18 @@ export const computeWeights = async (): Promise<
     metrics.forEach(({ metrics }) => {
       totalPRs += metrics.prCount;
       totalIssues += metrics.issueCount;
-      totalLinesAdded += metrics.linesAdded;
-      totalLinesDeleted += metrics.linesDeleted;
+      totalLinesAdded += capLines(metrics.linesAdded);
+      totalLinesDeleted += capLines(metrics.linesDeleted);
       totalCommits += metrics.commitCount;
     });
 
     const contributorsShares = metrics.map(async ({ metrics, info }) => {
       const normalizedPRs = metrics.prCount / totalPRs;
       const normalizedIssues = metrics.issueCount / totalIssues;
-      const normalizedLinesAdded = metrics.linesAdded / totalLinesAdded;
-      const normalizedLinesDeleted = metrics.linesDeleted / totalLinesDeleted;
+      const normalizedLinesAdded =
+        capLines(metrics.linesAdded) / totalLinesAdded;
+      const normalizedLinesDeleted =
+        capLines(metrics.linesDeleted) / totalLinesDeleted;
       const normalizedCommits = metrics.commitCount / totalCommits;
 
       const normalizedLines =
@@ -173,11 +178,13 @@ export const computeWeights = async (): Promise<
 
     core.info(`Computed weights for pool ${pool.id}`);
     core.startGroup("Weights");
-    fundingDistribution.forEach((fundingWeight) => {
-      core.info(
-        `${fundingWeight.contributor.artifact_namespace}/${fundingWeight.contributor.artifact_name}: ${fundingWeight.allocatedFunding}%`,
-      );
-    });
+    fundingDistribution
+      .sort((a, b) => b.allocatedFunding - a.allocatedFunding)
+      .forEach((fundingWeight) => {
+        core.info(
+          `${fundingWeight.contributor.artifact_namespace}/${fundingWeight.contributor.artifact_name}: ${fundingWeight.allocatedFunding}%`,
+        );
+      });
     core.endGroup();
   }
 
