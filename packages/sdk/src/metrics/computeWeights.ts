@@ -144,26 +144,7 @@ export const computeWeights = async (
 
     const recipients = (await Promise.all(contributorsShares)).flat();
 
-    const mergedRecipients = recipients.reduce<FundingWeight[]>(
-      (acc, recipient) => {
-        const existingRecipient = acc.find(
-          (r) =>
-            `${r.contributor.artifact_namespace}/${r.contributor.artifact_name}` ===
-            `${recipient.contributor.artifact_namespace}/${recipient.contributor.artifact_name}`,
-        );
-
-        if (existingRecipient) {
-          existingRecipient.allocatedFunding += recipient.allocatedFunding;
-        } else {
-          acc.push(recipient);
-        }
-
-        return acc;
-      },
-      [],
-    );
-
-    const fundingDistribution = mergedRecipients.map((contributorShare) => {
+    const fundingDistribution = recipients.map((contributorShare) => {
       return {
         contributor: contributorShare.contributor,
         allocatedFunding: +(
