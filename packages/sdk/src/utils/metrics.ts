@@ -32,28 +32,50 @@ export const metricsForProject = async (
   }
 
   try {
-    const { data: commits } = await octokit.rest.repos.listCommits({
-      owner: artifactNamespace,
-      repo: artifactName,
-      since: from.toISOString(),
-      until: to.toISOString(),
-    });
+    const commits = await octokit.paginate(
+      octokit.rest.repos.listCommits,
+      {
+        owner: artifactNamespace,
+        repo: artifactName,
+        since: from.toISOString(),
+        until: to.toISOString(),
+        per_page: 100,
+      },
+      (response) => response.data,
+    );
     const commitCount = commits.length;
 
-    const { data: issues } = await octokit.rest.issues.listForRepo({
-      owner: artifactNamespace,
-      repo: artifactName,
-      since: from.toISOString(),
-      state: "all",
+    const issues = await octokit.paginate(
+      octokit.rest.issues.listForRepo,
+      {
+        owner: artifactNamespace,
+        repo: artifactName,
+        state: "all",
+        per_page: 100,
+      },
+      (response) => response.data,
+    );
+    const validIssues = issues.filter((issue) => {
+      const createdAt = new Date(issue.created_at).getTime();
+      return createdAt >= from.getTime() && createdAt <= to.getTime();
     });
-    const issueCount = issues.length;
+    const issueCount = validIssues.length;
 
-    const { data: prs } = await octokit.rest.pulls.list({
-      owner: artifactNamespace,
-      repo: artifactName,
-      state: "all",
+    const prs = await octokit.paginate(
+      octokit.rest.pulls.list,
+      {
+        owner: artifactNamespace,
+        repo: artifactName,
+        state: "all",
+        per_page: 100,
+      },
+      (response) => response.data,
+    );
+    const validPRs = prs.filter((pr) => {
+      const createdAt = new Date(pr.created_at).getTime();
+      return createdAt >= from.getTime() && createdAt <= to.getTime();
     });
-    const prCount = prs.length;
+    const prCount = validPRs.length;
 
     const { data: codeFrequency } =
       await octokit.rest.repos.getCodeFrequencyStats({
@@ -79,14 +101,18 @@ export const metricsForProject = async (
       );
     }
 
-    // GitHub only provides the last 60 days of code frequency data
-    const daysBetween = Math.min(
-      Math.floor(((to.getTime() - from.getTime()) / 24) * 60 * 60 * 1000),
-      60,
+    const validDays = codeFrequency.filter(
+      ([timestamp]) =>
+        from.getTime() <= timestamp * 1000 && timestamp * 1000 <= to.getTime(),
     );
-    const lastDays = codeFrequency.slice(-daysBetween);
-    const linesAdded = lastDays.reduce((acc, week) => acc + week[1], 0);
-    const linesDeleted = lastDays.reduce((acc, week) => acc + week[2], 0);
+    const linesAdded = validDays.reduce(
+      (acc, [, additions]) => acc + additions,
+      0,
+    );
+    const linesDeleted = validDays.reduce(
+      (acc, [, , deletions]) => acc + deletions,
+      0,
+    );
 
     return new OkResult({
       commitCount,

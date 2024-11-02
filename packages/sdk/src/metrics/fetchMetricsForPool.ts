@@ -63,7 +63,22 @@ export const fetchMetricsForPool = async (
       return new FailResult(flatMappedMetric.unwrapFail());
     }
 
-    metrics.push(flatMappedMetric.unwrap());
+    const metric = flatMappedMetric.unwrap();
+
+    const existingMetric = metrics.find(
+      (m) =>
+        m.info.artifact_namespace === metric.info.artifact_namespace &&
+        m.info.artifact_name === metric.info.artifact_name,
+    );
+
+    if (existingMetric) {
+      core.warning(
+        `Metrics for project ${metric.info.artifact_namespace}/${metric.info.artifact_name} already exist`,
+      );
+      continue;
+    }
+
+    metrics.push(metric);
   }
 
   return new OkResult(metrics);
