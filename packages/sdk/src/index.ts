@@ -29,7 +29,9 @@ const commandMap: {
     const range = args.range as { from: Date; to: Date } | undefined;
     const result = await updateWeights(
       range?.from ?? daysAgo(7),
-      range?.to ?? new Date(),
+      range?.to
+        ? new Date(range.to.getTime() + 24 * 60 * 60 * 1000 - 1)
+        : new Date(),
     );
     if (result.isFail()) {
       throw result.unwrapFail();
